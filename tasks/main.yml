@@ -1,0 +1,60 @@
+---
+# tasks file for NFS
+# --------------------------------------------
+#
+#          Install server
+#
+# ---------------------------------------------
+- name: Install NFS server kernel
+  ansible.builtin.apt:
+    pkg: nfs-kernel-server
+    state: present
+    update_cache: true
+- name: Create nfs dir
+  ansible.builtin.file:
+    path: '{{ nfs_share }}'
+    owner: nobody
+    group: nogroup
+    mode: 01777
+- name: Grant NFS access
+  ansible.builtin.lineinfile:
+    path: /etc/exports''
+    line: '{{ nfs_share }} {{ subnet }}(rw,sync,no_subtree_check)'
+    create: true
+- name: exportfs
+  shell:
+    cmd: exportfs .a
+  become: true
+- name: restart nfs server
+  shell:
+    cmd: systemctl restart nfs-kernel-server
+  become: true
+- name: grant firewall access
+  shell:
+    cmd: 'ufw allow from {{ subnet }} to any port nfs'
+  become: true
+#- name: Enable Firewall
+#  shell:
+#    cmd: ufw enable
+#  become: true
+# --------------------------------------------
+#
+#          Install client
+#
+# ---------------------------------------------
+- name: Install
+  apt:
+    pgk:
+    - nfs-common
+# --------------------------------------------
+#
+#          Test it
+#
+# ---------------------------------------------
+- name: Testmount dir
+  ansible.builtin.file:
+    path: '{{ nfs_client_share }}'
+    state: directory
+- name: Test mount
+  shell:
+    cmd: 'mount {{ host_ip }}:{{ nfs_share }} {{ nfs_client_share }}'
