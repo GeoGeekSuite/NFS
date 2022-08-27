@@ -21,13 +21,13 @@
   become: true
 - name: Grant NFS access
   ansible.builtin.lineinfile:
-    path: /etc/exports''
+    path: /etc/exports
     line: '{{ nfs_share }} {{ subnet }}(rw,sync,no_subtree_check)'
     create: true
   become: true
 - name: exportfs
   shell:
-    cmd: exportfs .a
+    cmd: exportfs -a
   become: true
 - name: restart nfs server
   shell:
@@ -48,7 +48,7 @@
 # ---------------------------------------------
 - name: Install
   apt:
-    pgk:
+    pkg:
     - nfs-common
 # --------------------------------------------
 #
